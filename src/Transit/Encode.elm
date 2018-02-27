@@ -15,11 +15,11 @@ import Json.Encode as JE
 
 
 type Value
-    = Str String
-    | Integer Int
-    | Boolean Bool
-    | Ls (List Value)
-    | Obj (List ( String, Value ))
+    = TString String
+    | TInt Int
+    | TBool Bool
+    | TList (List Value)
+    | TObject (List ( String, Value ))
 
 
 type alias Cache =
@@ -30,28 +30,27 @@ type alias Cache =
 
 string : String -> Value
 string str =
-    Str str
+    TString str
 
 
 int : Int -> Value
 int num =
-    Integer num
+    TInt num
 
 
 bool : Bool -> Value
 bool boolean =
-    Boolean boolean
+    TBool boolean
 
 
 list : (a -> Value) -> List a -> Value
 list conv ls =
-    List.map conv ls
-        |> Ls
+    TList <| List.map conv ls
 
 
 object : List ( String, Value ) -> Value
 object vals =
-    Obj vals
+    TObject vals
 
 
 encode : Int -> Value -> String
@@ -73,19 +72,19 @@ emptyCache =
 valueToJSON : Cache -> Value -> ( Cache, JE.Value )
 valueToJSON cache val =
     case val of
-        Str str ->
+        TString str ->
             ( cache, JE.string str )
 
-        Integer int ->
+        TInt int ->
             ( cache, JE.int int )
 
-        Boolean bool ->
+        TBool bool ->
             if bool then
                 ( cache, JE.string "?t" )
             else
                 ( cache, JE.string "?f" )
 
-        Ls list ->
+        TList list ->
             let
                 helper val ( currCache, acc ) =
                     let
@@ -97,7 +96,7 @@ valueToJSON cache val =
                 List.foldl helper ( cache, [] ) list
                     |> Tuple.mapSecond (JE.list << List.reverse)
 
-        Obj mappings ->
+        TObject mappings ->
             let
                 helper ( key, val ) ( currCache, acc ) =
                     let
