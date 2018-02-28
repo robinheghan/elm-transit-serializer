@@ -44,5 +44,5 @@ tests =
                             |> TE.encode 0
                 in
                     Expect.equal transit <|
-                        "[[\"^ \",\"name\",\"Robin\",\"age\",28,\"gender\",\"Male\",\"isHappy\",\"?f\"],[\"^ \",\"^0\",\"Evan\",\"age\",25,\"^1\",\"Male\",\"^2\",\"?t\"],[\"^ \",\"^0\",\"Johanne\",\"age\",25,\"^1\",\"Female\",\"^2\",\"?t\"]]"
+                        "[[\"^ \",\"name\",\"Robin\",\"age\",28,\"gender\",\"Male\",\"isHappy\",false],[\"^ \",\"^0\",\"Evan\",\"age\",25,\"^1\",\"Male\",\"^2\",true],[\"^ \",\"^0\",\"Johanne\",\"age\",25,\"^1\",\"Female\",\"^2\",true]]"
         ]

@@ -65,10 +65,7 @@ valueToJSON cache val =
             ( cache, JE.int int )
 
         TBool bool ->
-            if bool then
-                ( cache, JE.string "?t" )
-            else
-                ( cache, JE.string "?f" )
+            ( cache, JE.bool bool )
 
         TList list ->
             let
