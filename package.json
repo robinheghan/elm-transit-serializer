@@ -1,6 +1,7 @@
 {
     "scripts": {
-        "test": "elm-test --fuzz=1000"
+	"test": "elm-test --fuzz=1000",
+	"dev": "elm-test --fuzz=1000 --watch"
     },
     "devDependencies": {
         "elm-test": "^0.18.7"
