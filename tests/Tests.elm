@@ -8,39 +8,39 @@ import Fuzz exposing (Fuzzer)
 import Expect
 
 
-type alias Person =
+type alias Language =
     { name : String
     , age : Int
-    , gender : String
-    , isHappy : Bool
+    , syntaxInspiration : String
+    , isStaticTyped : Bool
     }
 
 
-samplePersons : List Person
-samplePersons =
-    [ Person "Robin" 28 "Male" False
-    , Person "Evan" 25 "Male" True
-    , Person "Johanne" 25 "Female" True
+sampleLanguages : List Language
+sampleLanguages =
+    [ Language "Elm" 5 "ML" True
+    , Language "Clojure" 10 "Lisp" False
+    , Language "Go" 10 "C" True
     ]
 
 
-personEncoder : Person -> TE.Value
-personEncoder person =
+languageEncoder : Language -> TE.Value
+languageEncoder language =
     TE.object
-        [ ( "name", TE.string person.name )
-        , ( "age", TE.int person.age )
-        , ( "gender", TE.string person.gender )
-        , ( "isHappy", TE.bool person.isHappy )
+        [ ( "name", TE.string language.name )
+        , ( "age", TE.int language.age )
+        , ( "syntaxInspiration", TE.string language.syntaxInspiration )
+        , ( "isStaticTyped", TE.bool language.isStaticTyped )
         ]
 
 
-personDecoder : TD.Decoder Person
-personDecoder =
-    TD.map4 Person
+languageDecoder : TD.Decoder Language
+languageDecoder =
+    TD.map4 Language
         (TD.field "name" TD.string)
         (TD.field "age" TD.int)
-        (TD.field "gender" TD.string)
-        (TD.field "isHappy" TD.bool)
+        (TD.field "syntaxInspiration" TD.string)
+        (TD.field "isStaticTyped" TD.bool)
 
 
 tests : Test
@@ -50,15 +50,18 @@ tests =
             \() ->
                 let
                     transit =
-                        TE.list personEncoder samplePersons
+                        TE.list languageEncoder sampleLanguages
                             |> TE.encode 0
                 in
                     Expect.equal transit <|
-                        "[[\"^ \",\"name\",\"Robin\",\"age\",28,\"gender\",\"Male\",\"isHappy\",false],[\"^ \",\"^0\",\"Evan\",\"age\",25,\"^1\",\"Male\",\"^2\",true],[\"^ \",\"^0\",\"Johanne\",\"age\",25,\"^1\",\"Female\",\"^2\",true]]"
-        , test "Decoding works" <|
+                        ("[[\"^ \",\"name\",\"Elm\",\"age\",5,\"syntaxInspiration\",\"ML\",\"isStaticTyped\",true],"
+                            ++ "[\"^ \",\"^0\",\"Clojure\",\"age\",10,\"^1\",\"Lisp\",\"^2\",false],"
+                            ++ "[\"^ \",\"^0\",\"Go\",\"age\",10,\"^1\",\"C\",\"^2\",true]]"
+                        )
+        , test "Can be decoded" <|
             \() ->
-                TE.list personEncoder samplePersons
+                TE.list languageEncoder sampleLanguages
                     |> TE.encode 0
-                    |> TD.decodeString (TD.list personDecoder)
-                    |> Expect.equal (Ok samplePersons)
+                    |> TD.decodeString (TD.list languageDecoder)
+                    |> Expect.equal (Ok sampleLanguages)
         ]
