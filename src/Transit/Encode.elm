@@ -9,7 +9,7 @@ module Transit.Encode
         , encode
         )
 
-import Transit.Cache as Cache exposing (Cache)
+import Transit.Cache as Cache exposing (WriteCache)
 import Json.Encode as JE
 
 
@@ -50,12 +50,12 @@ encode : Int -> Value -> String
 encode indent val =
     let
         ( _, json ) =
-            valueToJSON Cache.empty val
+            valueToJSON Cache.emptyWriteCache val
     in
         JE.encode indent json
 
 
-valueToJSON : Cache -> Value -> ( Cache, JE.Value )
+valueToJSON : WriteCache -> Value -> ( WriteCache, JE.Value )
 valueToJSON cache val =
     case val of
         TString str ->
@@ -84,7 +84,7 @@ valueToJSON cache val =
                 helper ( key, val ) ( currCache, acc ) =
                     let
                         ( cachedKey, cacheWithKey ) =
-                            Cache.insertKey key currCache
+                            Cache.insertWriteCache key currCache
 
                         ( nextCache, jsonified ) =
                             valueToJSON cacheWithKey val
