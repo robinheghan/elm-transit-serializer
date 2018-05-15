@@ -47,44 +47,41 @@ tests =
     describe "Transit"
         [ describe "Lists and Records"
             [ test "Encode with cached keys" <|
-                \() ->
-                    let
-                        transit =
-                            TE.list languageEncoder sampleLanguages
-                                |> TE.encode 0
-                    in
-                        Expect.equal transit <|
+                \_ ->
+                    sampleLanguages
+                        |> TE.list languageEncoder
+                        |> TE.encode 0
+                        |> Expect.equal
                             ("[[\"^ \",\"name\",\"Elm\",\"age\",5,\"syntaxInspiration\",\"ML\",\"isStaticTyped\",true],"
                                 ++ "[\"^ \",\"^0\",\"Clojure\",\"age\",10,\"^1\",\"Lisp\",\"^2\",false],"
                                 ++ "[\"^ \",\"^0\",\"Go\",\"age\",10,\"^1\",\"C\",\"^2\",true]]"
                             )
             , test "Decoded" <|
-                \() ->
-                    TE.list languageEncoder sampleLanguages
+                \_ ->
+                    sampleLanguages
+                        |> TE.list languageEncoder
                         |> TE.encode 0
                         |> TD.decodeString (TD.list languageDecoder)
                         |> Expect.equal (Ok sampleLanguages)
             ]
         , describe "Keywords"
             [ test "Encode" <|
-                \() ->
-                    let
-                        transit =
-                            TE.list TE.keyword [ "test", "test" ]
-                                |> TE.encode 0
-                    in
-                        Expect.equal transit <|
-                            "[\"~:test\",\"^0\"]"
+                \_ ->
+                    [ "test", "test" ]
+                        |> TE.list TE.keyword
+                        |> TE.encode 0
+                        |> Expect.equal "[\"~:test\",\"^0\"]"
             , test "Decode" <|
-                \() ->
-                    TE.list TE.keyword [ "test", "test" ]
+                \_ ->
+                    [ "test", "test" ]
+                        |> TE.list TE.keyword
                         |> TE.encode 0
                         |> TD.decodeString (TD.list TD.keyword)
                         |> Expect.equal (Ok [ "test", "test" ])
             ]
         , describe "Cache"
-            [ test "Max cache size 44^2, should reset won overflow" <|
-                \() ->
+            [ test "Max cache size is 44^2, and should reset on overflow" <|
+                \_ ->
                     let
                         duplicatePairs acc ls =
                             case ls of
