@@ -43,38 +43,42 @@ languageDecoder =
 
 tests : Test
 tests =
-    describe "Transit Test"
-        [ test "Encodes to JSON arrays with cached keys" <|
-            \() ->
-                let
-                    transit =
-                        TE.list languageEncoder sampleLanguages
-                            |> TE.encode 0
-                in
-                    Expect.equal transit <|
-                        ("[[\"^ \",\"name\",\"Elm\",\"age\",5,\"syntaxInspiration\",\"ML\",\"isStaticTyped\",true],"
-                            ++ "[\"^ \",\"^0\",\"Clojure\",\"age\",10,\"^1\",\"Lisp\",\"^2\",false],"
-                            ++ "[\"^ \",\"^0\",\"Go\",\"age\",10,\"^1\",\"C\",\"^2\",true]]"
-                        )
-        , test "Can be decoded" <|
-            \() ->
-                TE.list languageEncoder sampleLanguages
-                    |> TE.encode 0
-                    |> TD.decodeString (TD.list languageDecoder)
-                    |> Expect.equal (Ok sampleLanguages)
-        , test "Keyword encode" <|
-            \() ->
-                let
-                    transit =
-                        TE.list TE.keyword [ "test", "test" ]
-                            |> TE.encode 0
-                in
-                    Expect.equal transit <|
-                        "[\"~:test\",\"^0\"]"
-        , test "Keyword decode" <|
-            \() ->
-                TE.list TE.keyword [ "test", "test" ]
-                    |> TE.encode 0
-                    |> TD.decodeString (TD.list TD.keyword)
-                    |> Expect.equal (Ok [ "test", "test" ])
+    describe "Transit"
+        [ describe "Lists and Records"
+            [ test "Encode with cached keys" <|
+                \() ->
+                    let
+                        transit =
+                            TE.list languageEncoder sampleLanguages
+                                |> TE.encode 0
+                    in
+                        Expect.equal transit <|
+                            ("[[\"^ \",\"name\",\"Elm\",\"age\",5,\"syntaxInspiration\",\"ML\",\"isStaticTyped\",true],"
+                                ++ "[\"^ \",\"^0\",\"Clojure\",\"age\",10,\"^1\",\"Lisp\",\"^2\",false],"
+                                ++ "[\"^ \",\"^0\",\"Go\",\"age\",10,\"^1\",\"C\",\"^2\",true]]"
+                            )
+            , test "Decoded" <|
+                \() ->
+                    TE.list languageEncoder sampleLanguages
+                        |> TE.encode 0
+                        |> TD.decodeString (TD.list languageDecoder)
+                        |> Expect.equal (Ok sampleLanguages)
+            ]
+        , describe "Keywords"
+            [ test "Encode" <|
+                \() ->
+                    let
+                        transit =
+                            TE.list TE.keyword [ "test", "test" ]
+                                |> TE.encode 0
+                    in
+                        Expect.equal transit <|
+                            "[\"~:test\",\"^0\"]"
+            , test "Decode" <|
+                \() ->
+                    TE.list TE.keyword [ "test", "test" ]
+                        |> TE.encode 0
+                        |> TD.decodeString (TD.list TD.keyword)
+                        |> Expect.equal (Ok [ "test", "test" ])
+            ]
         ]
