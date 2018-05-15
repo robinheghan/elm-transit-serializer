@@ -1,10 +1,8 @@
 module Tests exposing (tests)
 
-import Json.Encode as JE exposing (Value)
 import Transit.Encode as TE
 import Transit.Decode as TD
 import Test exposing (..)
-import Fuzz exposing (Fuzzer)
 import Expect
 
 
@@ -64,4 +62,19 @@ tests =
                     |> TE.encode 0
                     |> TD.decodeString (TD.list languageDecoder)
                     |> Expect.equal (Ok sampleLanguages)
+        , test "Keyword encode" <|
+            \() ->
+                let
+                    transit =
+                        TE.list TE.keyword [ "test", "test" ]
+                            |> TE.encode 0
+                in
+                    Expect.equal transit <|
+                        "[\"~:test\",\"^0\"]"
+        , test "Keyword decode" <|
+            \() ->
+                TE.list TE.keyword [ "test", "test" ]
+                    |> TE.encode 0
+                    |> TD.decodeString (TD.list TD.keyword)
+                    |> Expect.equal (Ok [ "test", "test" ])
         ]

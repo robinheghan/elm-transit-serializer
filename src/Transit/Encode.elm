@@ -2,6 +2,7 @@ module Transit.Encode
     exposing
         ( Value
         , string
+        , keyword
         , int
         , bool
         , list
@@ -15,6 +16,7 @@ import Json.Encode as JE
 
 type Value
     = TString String
+    | TKeyword String
     | TInt Int
     | TBool Bool
     | TList (List Value)
@@ -24,6 +26,11 @@ type Value
 string : String -> Value
 string str =
     TString str
+
+
+keyword : String -> Value
+keyword str =
+    TKeyword str
 
 
 int : Int -> Value
@@ -60,6 +67,16 @@ valueToJSON cache val =
     case val of
         TString str ->
             ( cache, JE.string str )
+
+        TKeyword str ->
+            let
+                encoded =
+                    "~:" ++ str
+
+                ( cachedKey, cacheWithKey ) =
+                    Cache.insertWriteCache encoded cache
+            in
+                ( cacheWithKey, JE.string cachedKey )
 
         TInt int ->
             ( cache, JE.int int )

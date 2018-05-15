@@ -6,6 +6,7 @@ module Transit.Cache
         , emptyReadCache
         , insertWriteCache
         , insertReadCache
+        , getFromReadCache
         )
 
 import Array exposing (Array)
@@ -74,6 +75,14 @@ insertReadCache key cache =
         )
     else
         ( key, cache )
+
+
+getFromReadCache : String -> ReadCache -> String
+getFromReadCache key cache =
+    if String.startsWith "^" key then
+        Maybe.withDefault key <| Array.get (cacheCodeToCount key) cache.values
+    else
+        key
 
 
 cacheCodeDigits : Int

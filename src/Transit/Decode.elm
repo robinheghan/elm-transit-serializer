@@ -2,6 +2,7 @@ module Transit.Decode
     exposing
         ( Decoder
         , string
+        , keyword
         , bool
         , int
         , list
@@ -34,6 +35,31 @@ string =
 
                 Err _ ->
                     ( cache, Err "Not a string" )
+    in
+        Decoder decoder
+
+
+keyword : Decoder String
+keyword =
+    let
+        decoder value cache =
+            case JD.decodeValue JD.string value of
+                Ok str ->
+                    let
+                        encodedKeyword =
+                            Cache.getFromReadCache str cache
+                    in
+                        if String.length encodedKeyword >= 3 && String.startsWith "~:" encodedKeyword then
+                            let
+                                ( keyword, cacheWithKeyword ) =
+                                    Cache.insertReadCache str cache
+                            in
+                                ( cacheWithKeyword, Ok <| String.dropLeft 2 keyword )
+                        else
+                            ( cache, Err <| "Not a keyword: " ++ str )
+
+                Err _ ->
+                    ( cache, Err <| "Not a keyword" )
     in
         Decoder decoder
 
