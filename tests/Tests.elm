@@ -4,6 +4,7 @@ import Transit.Encode as TE
 import Transit.Decode as TD
 import Test exposing (..)
 import Expect
+import String
 
 
 type alias Language =
@@ -80,5 +81,29 @@ tests =
                         |> TE.encode 0
                         |> TD.decodeString (TD.list TD.keyword)
                         |> Expect.equal (Ok [ "test", "test" ])
+            ]
+        , describe "Cache"
+            [ test "Max cache size 44^2, should reset won overflow" <|
+                \() ->
+                    let
+                        duplicatePairs acc ls =
+                            case ls of
+                                [] ->
+                                    acc
+
+                                x :: xs ->
+                                    duplicatePairs (x :: x :: acc) xs
+
+                        equalEnd expected total =
+                            total
+                                |> String.right (String.length expected)
+                                |> Expect.equal expected
+                    in
+                        List.range 0 (44 * 44 + 10)
+                            |> List.map (\i -> "key-" ++ toString i)
+                            |> duplicatePairs []
+                            |> TE.list TE.keyword
+                            |> TE.encode 0
+                            |> equalEnd "\"~:key-0\",\"^9\"]"
             ]
         ]
