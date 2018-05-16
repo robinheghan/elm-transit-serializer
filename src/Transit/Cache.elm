@@ -14,6 +14,11 @@ import Char
 import Dict exposing (Dict)
 
 
+maxCacheSize : Int
+maxCacheSize =
+    44 * 44
+
+
 type alias WriteCache =
     { counter : Int
     , valueToID : Dict String String
@@ -48,13 +53,16 @@ insertWriteCache key cache =
                 ( cacheID, cache )
 
             Nothing ->
-                let
-                    code =
-                        countToCacheCode cache.counter
-                in
+                if cache.counter == maxCacheSize then
+                    ( key
+                    , { counter = 1
+                      , valueToID = Dict.insert key (countToCacheCode 0) Dict.empty
+                      }
+                    )
+                else
                     ( key
                     , { counter = cache.counter + 1
-                      , valueToID = Dict.insert key code cache.valueToID
+                      , valueToID = Dict.insert key (countToCacheCode cache.counter) cache.valueToID
                       }
                     )
     else
@@ -68,11 +76,18 @@ insertReadCache key cache =
         , cache
         )
     else if String.length key > 3 then
-        ( key
-        , { counter = cache.counter + 1
-          , values = Array.push key cache.values
-          }
-        )
+        if cache.counter == maxCacheSize then
+            ( key
+            , { counter = 1
+              , values = Array.push key Array.empty
+              }
+            )
+        else
+            ( key
+            , { counter = cache.counter + 1
+              , values = Array.push key cache.values
+              }
+            )
     else
         ( key, cache )
 

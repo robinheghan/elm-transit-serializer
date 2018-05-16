@@ -79,28 +79,38 @@ tests =
                         |> TD.decodeString (TD.list TD.keyword)
                         |> Expect.equal (Ok [ "test", "test" ])
             ]
-        , describe "Cache"
-            [ test "Max cache size is 44^2, and should reset on overflow" <|
-                \_ ->
-                    let
-                        duplicatePairs acc ls =
-                            case ls of
-                                [] ->
-                                    acc
+        , describe "Cache" <|
+            let
+                duplicatePairs acc ls =
+                    case ls of
+                        [] ->
+                            acc
 
-                                x :: xs ->
-                                    duplicatePairs (x :: x :: acc) xs
+                        x :: xs ->
+                            duplicatePairs (x :: x :: acc) xs
 
-                        equalEnd expected total =
-                            total
-                                |> String.right (String.length expected)
-                                |> Expect.equal expected
-                    in
-                        List.range 0 (44 * 44 + 10)
-                            |> List.map (\i -> "key-" ++ toString i)
-                            |> duplicatePairs []
+                sample =
+                    List.range 0 (44 * 44 + 10)
+                        |> List.map (\i -> "key-" ++ toString i)
+                        |> duplicatePairs []
+
+                equalEnd expected total =
+                    total
+                        |> String.right (String.length expected)
+                        |> Expect.equal expected
+            in
+                [ test "Encode: Max cache size is 44^2, and should reset on overflow" <|
+                    \_ ->
+                        sample
                             |> TE.list TE.keyword
                             |> TE.encode 0
-                            |> equalEnd "\"~:key-0\",\"^9\"]"
-            ]
+                            |> equalEnd "\"~:key-1\",\"^9\",\"~:key-0\",\"^:\"]"
+                , test "Decode: Max cache size is 44^2, and should reset on overflow" <|
+                    \_ ->
+                        sample
+                            |> TE.list TE.keyword
+                            |> TE.encode 0
+                            |> TD.decodeString (TD.list TD.keyword)
+                            |> Expect.equal (Ok sample)
+                ]
         ]
