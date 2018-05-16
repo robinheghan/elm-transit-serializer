@@ -3,6 +3,7 @@ module Transit.Decode
         ( Decoder
         , string
         , keyword
+        , symbol
         , bool
         , int
         , list
@@ -39,29 +40,39 @@ string =
         Decoder decoder
 
 
-keyword : Decoder String
-keyword =
+constantString : String -> String -> Decoder String
+constantString name tag =
     let
         decoder value cache =
             case JD.decodeValue JD.string value of
                 Ok str ->
                     let
-                        encodedKeyword =
+                        encoded =
                             Cache.getFromReadCache str cache
                     in
-                        if String.length encodedKeyword >= 3 && String.startsWith "~:" encodedKeyword then
+                        if String.length encoded >= 3 && String.startsWith tag encoded then
                             let
-                                ( keyword, cacheWithKeyword ) =
+                                ( constant, cacheWithConstant ) =
                                     Cache.insertReadCache str cache
                             in
-                                ( cacheWithKeyword, Ok <| String.dropLeft 2 keyword )
+                                ( cacheWithConstant, Ok <| String.dropLeft 2 constant )
                         else
-                            ( cache, Err <| "Not a keyword: " ++ str )
+                            ( cache, Err <| "Not a " ++ name ++ ": " ++ str )
 
                 Err _ ->
-                    ( cache, Err <| "Not a keyword" )
+                    ( cache, Err <| "Not a " ++ name )
     in
         Decoder decoder
+
+
+keyword : Decoder String
+keyword =
+    constantString "keyword" "~:"
+
+
+symbol : Decoder String
+symbol =
+    constantString "symbol" "~$"
 
 
 bool : Decoder Bool

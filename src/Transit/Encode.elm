@@ -3,6 +3,7 @@ module Transit.Encode
         ( Value
         , string
         , keyword
+        , symbol
         , int
         , bool
         , list
@@ -17,6 +18,7 @@ import Json.Encode as JE
 type Value
     = TString String
     | TKeyword String
+    | TSymbol String
     | TInt Int
     | TBool Bool
     | TList (List Value)
@@ -31,6 +33,11 @@ string str =
 keyword : String -> Value
 keyword str =
     TKeyword str
+
+
+symbol : String -> Value
+symbol str =
+    TSymbol str
 
 
 int : Int -> Value
@@ -72,6 +79,16 @@ valueToJSON cache val =
             let
                 encoded =
                     "~:" ++ str
+
+                ( cachedKey, cacheWithKey ) =
+                    Cache.insertWriteCache encoded cache
+            in
+                ( cacheWithKey, JE.string cachedKey )
+
+        TSymbol str ->
+            let
+                encoded =
+                    "~$" ++ str
 
                 ( cachedKey, cacheWithKey ) =
                     Cache.insertWriteCache encoded cache

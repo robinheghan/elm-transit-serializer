@@ -64,21 +64,28 @@ tests =
                         |> TD.decodeString (TD.list languageDecoder)
                         |> Expect.equal (Ok sampleLanguages)
             ]
-        , describe "Keywords"
-            [ test "Encode" <|
-                \_ ->
-                    [ "test", "test" ]
-                        |> TE.list TE.keyword
-                        |> TE.encode 0
-                        |> Expect.equal "[\"~:test\",\"^0\"]"
-            , test "Decode" <|
-                \_ ->
-                    [ "test", "test" ]
-                        |> TE.list TE.keyword
-                        |> TE.encode 0
-                        |> TD.decodeString (TD.list TD.keyword)
-                        |> Expect.equal (Ok [ "test", "test" ])
-            ]
+        , describe "Keywords and Symbols" <|
+            let
+                encodeTest encoder =
+                    \_ ->
+                        [ "test", "test" ]
+                            |> TE.list TE.keyword
+                            |> TE.encode 0
+                            |> Expect.equal "[\"~:test\",\"^0\"]"
+
+                decodeTest encoder decoder =
+                    \_ ->
+                        [ "test", "test" ]
+                            |> TE.list encoder
+                            |> TE.encode 0
+                            |> TD.decodeString (TD.list decoder)
+                            |> Expect.equal (Ok [ "test", "test" ])
+            in
+                [ test "Encode Keyword" (encodeTest TE.keyword)
+                , test "Encode Symbol" (encodeTest TE.symbol)
+                , test "Decode Keyword" (decodeTest TE.keyword TD.keyword)
+                , test "Decode Symbol" (decodeTest TE.symbol TD.symbol)
+                ]
         , describe "Cache" <|
             let
                 duplicatePairs acc ls =
